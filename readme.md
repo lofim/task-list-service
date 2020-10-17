@@ -1,4 +1,4 @@
-# Task list backend service implmentation in Golang
+# Task list service implmentation in Golang
 
 This project is a sample implementation of Task list backend using Golang.
 It demonstrated the following concepts:

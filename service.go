@@ -14,7 +14,7 @@ func NewTaskService() TaskService {
 	return &taskService{}
 }
 
-// Holds any dependencies as shared states for the methods.
+// Holds any dependencies as shared state for the methods.
 // Possible dependencies could be a database repository or external system interfaces.
 // Concrete implementations of these interfaces are supplied in the main function.
 type taskService struct{}
