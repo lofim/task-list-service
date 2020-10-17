@@ -27,7 +27,7 @@ func main() {
 	apiV1 := r.PathPrefix("/api/v1").Subrouter()
 
 	// register the handlers using the controller
-	apiV1.HandleFunc("/tasks", genericHandlerWrapper(taskController.getTasks)).Methods(http.MethodGet)
+	apiV1.HandleFunc("/tasks", genericHandlerWrapper(taskController.listTasks)).Methods(http.MethodGet)
 	apiV1.HandleFunc("/tasks", genericHandlerWrapper(taskController.createTask)).Methods(http.MethodPost)
 
 	// register utility handlers such as healh check

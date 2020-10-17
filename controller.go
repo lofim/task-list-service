@@ -13,7 +13,7 @@ type TaskController struct {
 	taskService TaskService
 }
 
-func (tc *TaskController) getTasks(r *http.Request) (interface{}, error) {
+func (tc *TaskController) listTasks(r *http.Request) (interface{}, error) {
 	// call service layer
 	// ignore service layer errors for now
 	return tc.taskService.ListTasks(), nil
