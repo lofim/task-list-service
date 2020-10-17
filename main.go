@@ -26,9 +26,12 @@ func main() {
 	r := mux.NewRouter()
 	apiV1 := r.PathPrefix("/api/v1").Subrouter()
 
-	// register the handlers using the controller
+	// register controller handlers wrapped in genericHandlerWrapper for error handling
 	apiV1.HandleFunc("/tasks", genericHandlerWrapper(taskController.listTasks)).Methods(http.MethodGet)
 	apiV1.HandleFunc("/tasks", genericHandlerWrapper(taskController.createTask)).Methods(http.MethodPost)
+	apiV1.HandleFunc("/tasks/{id}", genericHandlerWrapper(taskController.deleteTask)).Methods(http.MethodDelete)
+	apiV1.HandleFunc("/tasks/{id}", genericHandlerWrapper(taskController.getTask)).Methods(http.MethodGet)
+	apiV1.HandleFunc("/tasks/{id}", genericHandlerWrapper(taskController.updateTask)).Methods(http.MethodPut)
 
 	// register utility handlers such as healh check
 	r.HandleFunc("/health", health).Methods(http.MethodGet)
