@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -22,14 +23,14 @@ func (tc *TaskController) listTasks(r *http.Request) (interface{}, error) {
 }
 
 func (tc *TaskController) createTask(r *http.Request) (interface{}, error) {
-	// map input data to service layer data (unmarhsal json to model)
+	// map input data to service layer data (unmarshal json to model)
 	jsonDecoder := json.NewDecoder(r.Body)
 	jsonDecoder.DisallowUnknownFields()
 
 	var task Task
 	error := jsonDecoder.Decode(&task)
 	if error != nil {
-		return Task{}, errors.New("Error unmarshaling json body:" + error.Error())
+		return Task{}, fmt.Errorf("error unmarshaling json body: %w", error)
 	}
 
 	// very naive validation
@@ -57,7 +58,7 @@ func (tc *TaskController) updateTask(r *http.Request) (interface{}, error) {
 	var task Task
 	error := jsonDecoder.Decode(&task)
 	if error != nil {
-		return nil, errors.New("Error unmarshaling json body:" + error.Error())
+		return nil, fmt.Errorf("error unmarshaling json body: %w", error)
 	}
 
 	return tc.taskService.UpdateTask(taskID, task), nil

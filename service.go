@@ -15,7 +15,6 @@ type TaskService interface {
 	DeleteTask(ID string)
 }
 
-// NewTaskService creates a new task service implementation instance.
 func NewTaskService() TaskService {
 	return &taskService{}
 }
@@ -27,12 +26,12 @@ type taskService struct{}
 
 func (ts *taskService) ListTasks() []Task {
 	return []Task{
-		Task{
+		{
 			ID:          "1abc1",
 			Description: "Do chores",
 			Status:      "opened",
 		},
-		Task{
+		{
 			ID:          "2abc2",
 			Description: "Clean the house",
 			Status:      "closed",
@@ -43,7 +42,8 @@ func (ts *taskService) GetTask(ID string) Task {
 	return Task{
 		ID:          ID,
 		Description: "Your task",
-		Status:      "opened"}
+		Status:      "opened",
+	}
 }
 
 func (ts *taskService) CreateTask(task Task) Task {
@@ -53,16 +53,16 @@ func (ts *taskService) CreateTask(task Task) Task {
 	return Task{
 		ID:          fmt.Sprint(randomID),
 		Description: task.Description,
-		Status:      "opened"}
+		Status:      "opened",
+	}
 }
 
 func (ts *taskService) UpdateTask(ID string, task Task) Task {
 	return Task{
 		ID:          ID,
 		Description: task.Description,
-		Status:      task.Status}
+		Status:      task.Status,
+	}
 }
 
-func (ts *taskService) DeleteTask(ID string) {
-	return
-}
+func (ts *taskService) DeleteTask(ID string) {}

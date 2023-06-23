@@ -9,17 +9,17 @@ import (
 
 func main() {
 	// Main function does most setup here.
-	// Since we don't use Ioc container we need to create all dependencies manually
+	// Since we don't use IoC container we need to create all dependencies manually
 	// taskService is a dependency of taskController
-	// taskService holds the bussiness logic and is implementation agnostic, decoupled using an interface
+	// taskService holds the business logic and is implementation agnostic, decoupled using an interface
 	// taskController is a collection of functions/API handlers, we could also apply interface abstraction here
 	// taskController does not implement any business logic only request/response mapping
 
-	// Sample of creating an object instance via contructor function
+	// Sample of creating an object instance via constructor function
 	taskService := NewTaskService()
 
-	// Sample of createing an object instance via struct literal
-	// Also shows inversion of controll (IoC) of taskService dependency
+	// Sample of creating an object instance via struct literal
+	// Also shows inversion of control (IoC) of taskService dependency
 	taskController := TaskController{taskService}
 
 	// Initialize router for version 1 of the API
@@ -27,7 +27,7 @@ func main() {
 	apiV1 := r.PathPrefix("/api/v1").Subrouter()
 
 	// register controller handlers wrapped in genericHandlerWrapper for error handling
-	apiV1.HandleFunc("/tasks", genericHandlerWrapper(taskController.listTasks)).Methods(http.MethodGet)
+	apiV1.Handle("/tasks", genericHandlerWrapper(taskController.listTasks)).Methods(http.MethodGet)
 	apiV1.HandleFunc("/tasks", genericHandlerWrapper(taskController.createTask)).Methods(http.MethodPost)
 	apiV1.HandleFunc("/tasks/{id}", genericHandlerWrapper(taskController.deleteTask)).Methods(http.MethodDelete)
 	apiV1.HandleFunc("/tasks/{id}", genericHandlerWrapper(taskController.getTask)).Methods(http.MethodGet)

@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-// ControllerFunc defines an interface for all controller methods to be handled by generticHandlerWrapper
+// ControllerFunc defines an interface for all controller methods to be handled by genericHandlerWrapper
 type ControllerFunc func(*http.Request) (interface{}, error)
 
 func health(w http.ResponseWriter, r *http.Request) {
@@ -21,10 +21,12 @@ func genericHandlerWrapper(handler ControllerFunc) http.HandlerFunc {
 		log.Printf("Invoked api: %s %s", r.Method, r.RequestURI)
 
 		handlerResult, error := handler(r)
+		defer log.Printf("Api: %s %s, response: %v", r.Method, r.RequestURI, handlerResult)
+
 		if error != nil {
 			// TODO: distinguish between different errors and set http status code appropriately
 			// Example1: handle NotFound error and send 404 status code
-			// Example2: handle Database connection erros and send 500 status code
+			// Example2: handle Database connection errors and send 500 status code
 			// Example3: handle validation errors and send 400 status code
 			// Don't handle auth errors here. This should be done by the middleware
 			log.Printf("Error executing generic response handler: %s", error.Error())
@@ -33,15 +35,14 @@ func genericHandlerWrapper(handler ControllerFunc) http.HandlerFunc {
 			return
 		}
 
-		defer log.Printf("Api: %s %s, response: %v", r.Method, r.RequestURI, handlerResult)
-
+		// Don't write response body with StatusNoContent is used
 		statusCode := getStatusCode(r.Method)
-		w.WriteHeader(statusCode)
-
-		// Don't write response body with StatusNoContent is use
 		if statusCode == http.StatusNoContent {
 			return
 		}
+
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(statusCode)
 
 		jsonEncoder := json.NewEncoder(w)
 		error = jsonEncoder.Encode(handlerResult)
@@ -55,10 +56,15 @@ func genericHandlerWrapper(handler ControllerFunc) http.HandlerFunc {
 }
 
 func respondError(w http.ResponseWriter, error string, statusCode int) {
-	errorResponse, _ := json.Marshal(ErrorResponse{
+	errorResponse, err := json.Marshal(ErrorResponse{
 		ErrorCode:    http.StatusBadRequest,
 		ErrorMessage: error,
 	})
+
+	if err != nil {
+		log.Printf("Error marshaling error response %v", err)
+		errorResponse = []byte("{\"statusCode\":500,\"errorMessage\":\"Unexpected error\"}")
+	}
 
 	w.WriteHeader(statusCode)
 	w.Write(errorResponse)
