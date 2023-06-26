@@ -4,7 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 func main() {
@@ -23,20 +24,20 @@ func main() {
 	taskController := TaskController{taskService}
 
 	// Initialize router for version 1 of the API
-	r := mux.NewRouter()
-	apiV1 := r.PathPrefix("/api/v1").Subrouter()
+	apiV1 := chi.NewRouter()
 
 	// register controller handlers wrapped in genericHandlerWrapper for error handling
-	apiV1.Handle("/tasks", genericHandlerWrapper(taskController.listTasks)).Methods(http.MethodGet)
-	apiV1.HandleFunc("/tasks", genericHandlerWrapper(taskController.createTask)).Methods(http.MethodPost)
-	apiV1.HandleFunc("/tasks/{id}", genericHandlerWrapper(taskController.deleteTask)).Methods(http.MethodDelete)
-	apiV1.HandleFunc("/tasks/{id}", genericHandlerWrapper(taskController.getTask)).Methods(http.MethodGet)
-	apiV1.HandleFunc("/tasks/{id}", genericHandlerWrapper(taskController.updateTask)).Methods(http.MethodPut)
+	apiV1.Get("/tasks", genericHandlerWrapper(taskController.listTasks))
+	apiV1.Post("/tasks", genericHandlerWrapper(taskController.createTask))
+	apiV1.Delete("/tasks/{id}", genericHandlerWrapper(taskController.deleteTask))
+	apiV1.Get("/tasks/{id}", genericHandlerWrapper(taskController.getTask))
+	apiV1.Put("/tasks/{id}", genericHandlerWrapper(taskController.updateTask))
 
-	// register utility handlers such as healh check
-	r.HandleFunc("/health", health).Methods(http.MethodGet)
-	http.Handle("/", r)
+	r := chi.NewRouter()
+	r.Use(middleware.Heartbeat("/health"))
+	r.Use(middleware.Logger)
+	r.Mount("/api/v1", apiV1)
 
 	log.Println("Starting server on port 8080 ...")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8080", r))
 }

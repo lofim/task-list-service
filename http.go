@@ -2,26 +2,19 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 )
 
+const UnexpectedErrorResponseJSON = "{\"statusCode\":500,\"errorMessage\":\"Unexpected error\"}"
+
 // ControllerFunc defines an interface for all controller methods to be handled by genericHandlerWrapper
 type ControllerFunc func(*http.Request) (interface{}, error)
-
-func health(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "up")
-}
 
 // genericHandlerWrapper performs logging, error handling and response unification
 func genericHandlerWrapper(handler ControllerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Invoked api: %s %s", r.Method, r.RequestURI)
-
 		handlerResult, error := handler(r)
-		defer log.Printf("Api: %s %s, response: %v", r.Method, r.RequestURI, handlerResult)
 
 		if error != nil {
 			// TODO: distinguish between different errors and set http status code appropriately
@@ -36,7 +29,7 @@ func genericHandlerWrapper(handler ControllerFunc) http.HandlerFunc {
 		}
 
 		// Don't write response body with StatusNoContent is used
-		statusCode := getStatusCode(r.Method)
+		statusCode := getSuccessStatusCode(r.Method)
 		if statusCode == http.StatusNoContent {
 			return
 		}
@@ -57,30 +50,33 @@ func genericHandlerWrapper(handler ControllerFunc) http.HandlerFunc {
 
 func respondError(w http.ResponseWriter, error string, statusCode int) {
 	errorResponse, err := json.Marshal(ErrorResponse{
-		ErrorCode:    http.StatusBadRequest,
+		ErrorCode:    statusCode,
 		ErrorMessage: error,
 	})
 
 	if err != nil {
 		log.Printf("Error marshaling error response %v", err)
-		errorResponse = []byte("{\"statusCode\":500,\"errorMessage\":\"Unexpected error\"}")
+		errorResponse = []byte(UnexpectedErrorResponseJSON)
 	}
 
 	w.WriteHeader(statusCode)
 	w.Write(errorResponse)
 }
 
-func getStatusCode(method string) int {
+func getSuccessStatusCode(method string) int {
 	var statusCode int
 	switch method {
+
+	case http.MethodGet:
+		fallthrough
+	case http.MethodPut:
+		fallthrough
+	case http.MethodPatch:
+		statusCode = http.StatusOK
 	case http.MethodPost:
 		statusCode = http.StatusCreated
-	case http.MethodGet:
-		statusCode = http.StatusOK
 	case http.MethodDelete:
 		statusCode = http.StatusNoContent
-	case http.MethodPut:
-		statusCode = http.StatusOK
 	default:
 		statusCode = http.StatusNotImplemented
 	}

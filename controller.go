@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 )
 
 // TaskController holds the API request/response mappings
@@ -46,12 +46,12 @@ func (tc *TaskController) createTask(r *http.Request) (interface{}, error) {
 }
 
 func (tc *TaskController) getTask(r *http.Request) (interface{}, error) {
-	taskID := mux.Vars(r)["id"]
+	taskID := chi.URLParam(r, "id")
 	return tc.taskService.GetTask(taskID), nil
 }
 
 func (tc *TaskController) updateTask(r *http.Request) (interface{}, error) {
-	taskID := mux.Vars(r)["id"]
+	taskID := chi.URLParam(r, "id")
 	jsonDecoder := json.NewDecoder(r.Body)
 	jsonDecoder.DisallowUnknownFields()
 
@@ -65,7 +65,7 @@ func (tc *TaskController) updateTask(r *http.Request) (interface{}, error) {
 }
 
 func (tc *TaskController) deleteTask(r *http.Request) (interface{}, error) {
-	taskID := mux.Vars(r)["id"]
+	taskID := chi.URLParam(r, "id")
 	tc.taskService.DeleteTask(taskID)
 
 	return nil, nil
